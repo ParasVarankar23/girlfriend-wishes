@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function GirlfriendWishFinalPage() {
     const herName = "Bhoke";
-    const yourName = "Boka";
+    const yourName = "Bhoka";
 
     // ================= STABLE DATA =================
     const relationshipStart = useMemo(() => new Date("2025-12-22T00:00:00"), []);
@@ -578,13 +578,13 @@ export default function GirlfriendWishFinalPage() {
                         </div>
 
                         <h3 className="text-2xl md:text-5xl font-extrabold text-pink-600 mb-4 leading-tight">
-                            {isBirthdayToday ? `Happy Birthday Boke 🎉💖` : `Birthday Special for ${herName} 💖`}
+                            {isBirthdayToday ? `Happy Birthday Bhoke 🎉💖` : `Birthday Special for ${herName} 💖`}
                         </h3>
 
                         {isBirthdayToday ? (
                             <>
                                 <p className="text-base md:text-xl text-rose-700 mb-6 leading-relaxed">
-                                    Happy Birthday Boke 💖🎂
+                                    Happy Birthday Bhoke 💖🎂
                                     <br />
                                     May your day be full of smiles, hugs, love, happiness, and beautiful surprises. ✨💕
                                 </p>
@@ -725,7 +725,7 @@ export default function GirlfriendWishFinalPage() {
                                             </p>
                                             <div className="mt-3 text-lg md:text-2xl font-bold text-rose-600">
                                                 {isBirthdayToday
-                                                    ? "Happy Birthday Boke 💖"
+                                                    ? "Happy Birthday Bhoke 💖"
                                                     : `${birthdayCountdown.days}d ${birthdayCountdown.hours}h ${birthdayCountdown.minutes}m ${birthdayCountdown.seconds}s`}
                                             </div>
                                         </div>
@@ -914,7 +914,7 @@ export default function GirlfriendWishFinalPage() {
                                     {isBirthdayToday && (
                                         <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-pink-100 to-rose-100 border border-pink-300 animate-birthdayPopupStrong">
                                             <p className="text-xl md:text-3xl font-extrabold text-pink-600">
-                                                🎂 Happy Birthday Boke 💖
+                                                🎂 Happy Birthday Bhoke 💖
                                             </p>
                                         </div>
                                     )}
@@ -953,7 +953,7 @@ export default function GirlfriendWishFinalPage() {
                                             </h3>
                                             <p className="mt-2 text-rose-600 font-semibold text-lg">
                                                 {isBirthdayToday
-                                                    ? "Happy Birthday Boke 💖"
+                                                    ? "Happy Birthday Bhoke 💖"
                                                     : `${birthdayCountdown.days}d ${birthdayCountdown.hours}h ${birthdayCountdown.minutes}m ${birthdayCountdown.seconds}s`}
                                             </p>
                                         </div>
