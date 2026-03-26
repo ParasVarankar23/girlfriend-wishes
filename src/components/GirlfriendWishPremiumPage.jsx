@@ -2,8 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function GirlfriendWishFinalPage() {
-    const herName = "Khushi";
-    const yourName = "Shrawan";
+    const herName = "Boke";
+    const yourName = "Boka";
 
     // ================= STABLE DATA =================
     const relationshipStart = useMemo(() => new Date("2025-12-22T00:00:00"), []);
