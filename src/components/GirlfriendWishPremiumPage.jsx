@@ -5,8 +5,20 @@ export default function GirlfriendWishFinalPage() {
     const herName = "Khushi";
     const yourName = "Shrawan";
 
-    // ================= STABLE DATA =================
-    const relationshipStart = useMemo(() => new Date("2025-12-22T00:00:00"), []);
+    // =========================================================
+    // DEV TEST MODE
+    // =========================================================
+    // true = test birthday popup right now
+    // false = real behavior (only opens automatically on 3 April)
+    const DEV_TEST_BIRTHDAY_MODE = false;
+
+    // =========================================================
+    // STABLE DATA
+    // =========================================================
+    const relationshipStart = useMemo(
+        () => new Date("2025-12-22T00:00:00"),
+        []
+    );
 
     const loveMessage = useMemo(
         () =>
@@ -55,8 +67,10 @@ export default function GirlfriendWishFinalPage() {
         [herName, yourName]
     );
 
-    // ================= STATE =================
-    const [screen, setScreen] = useState("loader");
+    // =========================================================
+    // STATE
+    // =========================================================
+    const [screen, setScreen] = useState("loader"); // loader -> intro -> countdown -> q1 -> q2 -> envelope -> message -> gallery -> final
     const [countdown, setCountdown] = useState(3);
 
     const [displayedText, setDisplayedText] = useState("");
@@ -69,6 +83,8 @@ export default function GirlfriendWishFinalPage() {
     const [birthdayBurst, setBirthdayBurst] = useState([]);
 
     const [musicStarted, setMusicStarted] = useState(false);
+    const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+
     const [envelopeOpen, setEnvelopeOpen] = useState(false);
 
     const [showBirthdayPopup, setShowBirthdayPopup] = useState(false);
@@ -95,10 +111,14 @@ export default function GirlfriendWishFinalPage() {
 
     const audioRef = useRef(null);
 
-    // ================= HELPERS =================
+    // =========================================================
+    // HELPERS
+    // =========================================================
     const formatTwo = (num) => String(num).padStart(2, "0");
 
-    // ================= GENERATED BACKGROUND =================
+    // =========================================================
+    // GENERATED BACKGROUND
+    // =========================================================
     useEffect(() => {
         const generatedHearts = Array.from({ length: 20 }, (_, i) => ({
             id: i,
@@ -162,18 +182,9 @@ export default function GirlfriendWishFinalPage() {
         setBirthdayBurst(burst);
     }, []);
 
-    // ================= LOADER TO INTRO =================
-    useEffect(() => {
-        if (screen !== "loader") return;
-
-        const timer = setTimeout(() => {
-            setScreen("intro");
-        }, 2200);
-
-        return () => clearTimeout(timer);
-    }, [screen]);
-
-    // ================= RELATIONSHIP TIMER =================
+    // =========================================================
+    // RELATIONSHIP TIMER
+    // =========================================================
     useEffect(() => {
         const updateRelationshipTime = () => {
             const now = new Date();
@@ -197,20 +208,27 @@ export default function GirlfriendWishFinalPage() {
         return () => clearInterval(interval);
     }, [relationshipStart]);
 
-    // ================= BIRTHDAY COUNTDOWN + AUTO OPEN ONLY ON 3 APRIL =================
+    // =========================================================
+    // BIRTHDAY COUNTDOWN + AUTO OPEN ONLY ON 3 APRIL
+    // =========================================================
     useEffect(() => {
         const updateBirthdayCountdown = () => {
             const now = new Date();
-            const todayBirthday = now.getMonth() === 3 && now.getDate() === 3; // April = 3
+
+            const todayBirthday =
+                DEV_TEST_BIRTHDAY_MODE || (now.getMonth() === 3 && now.getDate() === 3); // April = 3
+
             setIsBirthdayToday(todayBirthday);
 
             let target = new Date(now.getFullYear(), 3, 3, 0, 0, 0);
 
-            if (now > target && !todayBirthday) {
+            if (DEV_TEST_BIRTHDAY_MODE) {
+                target = new Date(now.getTime());
+            } else if (now > target && !todayBirthday) {
                 target = new Date(now.getFullYear() + 1, 3, 3, 0, 0, 0);
             }
 
-            const diff = target - now;
+            const diff = Math.max(0, target - now);
 
             const days = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
             const hours = Math.max(0, Math.floor((diff / (1000 * 60 * 60)) % 24));
@@ -227,7 +245,6 @@ export default function GirlfriendWishFinalPage() {
                     : `Countdown to ${herName}'s Birthday 🎂`,
             });
 
-            // auto open only on 3 April
             if (todayBirthday) {
                 setShowBirthdayPopup(true);
             }
@@ -238,7 +255,22 @@ export default function GirlfriendWishFinalPage() {
         return () => clearInterval(interval);
     }, [herName]);
 
-    // ================= COUNTDOWN =================
+    // =========================================================
+    // LOADER -> INTRO
+    // =========================================================
+    useEffect(() => {
+        if (screen !== "loader") return;
+
+        const timer = setTimeout(() => {
+            setScreen("intro");
+        }, 2200);
+
+        return () => clearTimeout(timer);
+    }, [screen]);
+
+    // =========================================================
+    // COUNTDOWN
+    // =========================================================
     useEffect(() => {
         if (screen !== "countdown") return;
 
@@ -257,23 +289,9 @@ export default function GirlfriendWishFinalPage() {
         };
     }, [screen]);
 
-    // ================= MESSAGE TYPEWRITER =================
-    useEffect(() => {
-        if (screen !== "message") return;
-
-        let index = 0;
-        setDisplayedText("");
-
-        const interval = setInterval(() => {
-            setDisplayedText(loveMessage.slice(0, index + 1));
-            index++;
-            if (index >= loveMessage.length) clearInterval(interval);
-        }, 24);
-
-        return () => clearInterval(interval);
-    }, [screen, loveMessage]);
-
-    // ================= ENVELOPE =================
+    // =========================================================
+    // ENVELOPE
+    // =========================================================
     useEffect(() => {
         if (screen !== "envelope") return;
 
@@ -293,7 +311,27 @@ export default function GirlfriendWishFinalPage() {
         };
     }, [screen]);
 
-    // ================= MESSAGE -> GALLERY =================
+    // =========================================================
+    // MESSAGE TYPEWRITER
+    // =========================================================
+    useEffect(() => {
+        if (screen !== "message") return;
+
+        let index = 0;
+        setDisplayedText("");
+
+        const interval = setInterval(() => {
+            setDisplayedText(loveMessage.slice(0, index + 1));
+            index++;
+            if (index >= loveMessage.length) clearInterval(interval);
+        }, 24);
+
+        return () => clearInterval(interval);
+    }, [screen, loveMessage]);
+
+    // =========================================================
+    // MESSAGE -> GALLERY
+    // =========================================================
     useEffect(() => {
         if (screen !== "message") return;
 
@@ -304,7 +342,9 @@ export default function GirlfriendWishFinalPage() {
         return () => clearTimeout(timer);
     }, [screen]);
 
-    // ================= GALLERY -> FINAL =================
+    // =========================================================
+    // GALLERY -> FINAL
+    // =========================================================
     useEffect(() => {
         if (screen !== "gallery") return;
 
@@ -315,7 +355,9 @@ export default function GirlfriendWishFinalPage() {
         return () => clearTimeout(timer);
     }, [screen]);
 
-    // ================= FINAL SCREEN CONTENT =================
+    // =========================================================
+    // FINAL SCREEN CONTENT
+    // =========================================================
     useEffect(() => {
         if (screen !== "final") return;
 
@@ -342,10 +384,12 @@ export default function GirlfriendWishFinalPage() {
         };
     }, [screen, finalLines]);
 
-    // ================= START MUSIC =================
+    // =========================================================
+    // START MUSIC
+    // =========================================================
     const startMusic = async () => {
         try {
-            if (audioRef.current && !musicStarted) {
+            if (audioRef.current) {
                 audioRef.current.currentTime = 0;
                 audioRef.current.volume = 0.6;
                 const playPromise = audioRef.current.play();
@@ -355,33 +399,82 @@ export default function GirlfriendWishFinalPage() {
                 }
 
                 setMusicStarted(true);
+                setIsMusicPlaying(true);
             }
-        } catch (err) {
-            console.log("Music blocked by browser, continuing without music.");
+        } catch (error) {
+            console.log("Autoplay blocked by browser:", error);
         }
     };
 
-    // ================= ACTIONS =================
-    const handleStart = () => {
-        startMusic();
+    const toggleMusic = async () => {
+        try {
+            if (!audioRef.current) return;
+
+            if (isMusicPlaying) {
+                audioRef.current.pause();
+                setIsMusicPlaying(false);
+            } else {
+                audioRef.current.volume = 0.6;
+                const playPromise = audioRef.current.play();
+                if (playPromise !== undefined) {
+                    await playPromise;
+                }
+                setMusicStarted(true);
+                setIsMusicPlaying(true);
+            }
+        } catch (error) {
+            console.log("Music toggle error:", error);
+        }
+    };
+
+    // =========================================================
+    // HANDLERS
+    // =========================================================
+    const handleStartSurprise = async () => {
+        await startMusic();
         setScreen("countdown");
     };
 
-    const handleQ1 = () => setScreen("q2");
-    const handleQ2 = () => setScreen("envelope");
+    const handleQ1Answer = () => {
+        setScreen("q2");
+    };
 
-    const handleReadAgain = () => {
+    const handleQ2Answer = () => {
+        setScreen("envelope");
+    };
+
+    const handleReadAgain = async () => {
+        setDisplayedText("");
         setDisplayedFinalLines([]);
         setShowHundredDaysPopup(false);
         setFinalQuestionAnswered(false);
-        setScreen("message");
+        setEnvelopeOpen(false);
+        setCountdown(3);
+        setScreen("intro");
+
+        try {
+            if (audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.volume = 0.6;
+                const playPromise = audioRef.current.play();
+                if (playPromise !== undefined) {
+                    await playPromise;
+                }
+                setMusicStarted(true);
+                setIsMusicPlaying(true);
+            }
+        } catch (error) {
+            console.log("Replay music blocked:", error);
+        }
     };
 
     const handleFinalYes = () => {
         setFinalQuestionAnswered(true);
     };
 
-    // ================= MEMO RENDER HELPERS =================
+    // =========================================================
+    // MEMO RENDER HELPERS
+    // =========================================================
     const floatingHearts = useMemo(
         () =>
             hearts.map((heart) => (
@@ -484,6 +577,9 @@ export default function GirlfriendWishFinalPage() {
         [birthdayBurst]
     );
 
+    // =========================================================
+    // RENDER
+    // =========================================================
     return (
         <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-pink-100 via-rose-50 to-purple-100 flex items-center justify-center px-4 py-8">
             {/* AUDIO */}
@@ -491,11 +587,16 @@ export default function GirlfriendWishFinalPage() {
                 <source src="/music/romantic.mp3" type="audio/mpeg" />
             </audio>
 
-            {/* BACKGROUND */}
-            <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">{floatingHearts}</div>
-            <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">{fallingPetals}</div>
 
-            {/* COUNTDOWN OUTSIDE CARD - THIS FIXES THE WHITE BOX ISSUE */}
+            {/* BACKGROUND */}
+            <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
+                {floatingHearts}
+            </div>
+            <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
+                {fallingPetals}
+            </div>
+
+            {/* COUNTDOWN FULL SCREEN */}
             {screen === "countdown" && (
                 <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-br from-pink-100/98 via-rose-50/98 to-purple-100/98 backdrop-blur-md overflow-hidden px-4">
                     <div className="absolute inset-0 pointer-events-none">{floatingHearts}</div>
@@ -506,8 +607,7 @@ export default function GirlfriendWishFinalPage() {
                         Get ready {herName}... 💖
                     </p>
 
-                    {/* ONLY PERFECT CIRCLE */}
-                    <div className="relative z-10 w-52 h-52 md:w-80 md:h-80 rounded-full bg-white/85 border-[8px] border-pink-300 shadow-[0_0_60px_rgba(255,105,180,0.25)] flex items-center justify-center">
+                    <div className="relative z-10 w-56 h-56 md:w-80 md:h-80 rounded-full bg-white/85 border-[8px] border-pink-300 shadow-[0_0_60px_rgba(255,105,180,0.25)] flex items-center justify-center">
                         {countdown > 0 ? (
                             <span className="text-8xl md:text-[180px] font-extrabold text-pink-600 leading-none animate-cinematicCount">
                                 {countdown}
@@ -526,12 +626,16 @@ export default function GirlfriendWishFinalPage() {
             {/* FINAL EFFECTS */}
             {screen === "final" && (
                 <>
-                    <div className="absolute inset-0 overflow-hidden z-20 pointer-events-none">{confettiEffect}</div>
-                    <div className="absolute inset-0 overflow-hidden z-20 pointer-events-none">{starsEffect}</div>
+                    <div className="absolute inset-0 overflow-hidden z-20 pointer-events-none">
+                        {confettiEffect}
+                    </div>
+                    <div className="absolute inset-0 overflow-hidden z-20 pointer-events-none">
+                        {starsEffect}
+                    </div>
                 </>
             )}
 
-            {/* STRONGER BIRTHDAY EFFECT ONLY ON 3 APRIL */}
+            {/* BIRTHDAY BURST */}
             {showBirthdayPopup && isBirthdayToday && (
                 <div className="absolute inset-0 overflow-hidden z-[90] pointer-events-none">
                     {birthdayBurstEffect}
@@ -573,39 +677,32 @@ export default function GirlfriendWishFinalPage() {
                         className={`bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-xl w-full text-center border-4 border-pink-200 ${isBirthdayToday ? "animate-birthdayPopupStrong" : "animate-popupIn"
                             }`}
                     >
-                        <div className={`text-5xl md:text-7xl mb-3 ${isBirthdayToday ? "animate-bounce" : "animate-bounce"}`}>
-                            🎂
-                        </div>
+                        <div className="text-5xl md:text-7xl mb-3 animate-bounce">🎂</div>
 
                         <h3 className="text-2xl md:text-5xl font-extrabold text-pink-600 mb-4 leading-tight">
-                            {isBirthdayToday ? `Happy Birthday Khushi 🎉💖` : `Birthday Special for ${herName} 💖`}
+                            {isBirthdayToday
+                                ? `Happy Birthday ${herName} 🎉💖`
+                                : `Birthday Special for ${herName} 💖`}
                         </h3>
 
                         {isBirthdayToday ? (
                             <>
                                 <p className="text-base md:text-xl text-rose-700 mb-6 leading-relaxed">
-                                    Happy Birthday Khushi 💖🎂
+                                    Happy Birthday {herName} 💖🎂
                                     <br />
                                     May your day be full of smiles, hugs, love, happiness, and beautiful surprises. ✨💕
                                 </p>
 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                                    <div className="bg-pink-50 rounded-2xl p-4 border border-pink-200">
-                                        <p className="text-2xl md:text-4xl font-extrabold text-pink-600">00</p>
-                                        <p className="text-sm md:text-base text-rose-600 font-semibold">Days</p>
-                                    </div>
-                                    <div className="bg-pink-50 rounded-2xl p-4 border border-pink-200">
-                                        <p className="text-2xl md:text-4xl font-extrabold text-pink-600">00</p>
-                                        <p className="text-sm md:text-base text-rose-600 font-semibold">Hours</p>
-                                    </div>
-                                    <div className="bg-pink-50 rounded-2xl p-4 border border-pink-200">
-                                        <p className="text-2xl md:text-4xl font-extrabold text-pink-600">00</p>
-                                        <p className="text-sm md:text-base text-rose-600 font-semibold">Minutes</p>
-                                    </div>
-                                    <div className="bg-pink-50 rounded-2xl p-4 border border-pink-200">
-                                        <p className="text-2xl md:text-4xl font-extrabold text-pink-600">00</p>
-                                        <p className="text-sm md:text-base text-rose-600 font-semibold">Seconds</p>
-                                    </div>
+                                    {["Days", "Hours", "Minutes", "Seconds"].map((label, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="bg-pink-50 rounded-2xl p-4 border border-pink-200"
+                                        >
+                                            <p className="text-2xl md:text-4xl font-extrabold text-pink-600">00</p>
+                                            <p className="text-sm md:text-base text-rose-600 font-semibold">{label}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </>
                         ) : (
@@ -660,9 +757,9 @@ export default function GirlfriendWishFinalPage() {
                 </div>
             )}
 
-            {/* MAIN CARD (NOT SHOWN DURING COUNTDOWN) */}
+            {/* MAIN CARD */}
             {screen !== "countdown" && (
-                <div className="relative z-10 w-full max-w-6xl">
+                <div className="relative z-10 w-full max-w-7xl">
                     <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-2xl rounded-3xl p-4 md:p-10 text-center">
                         {/* ================= LOADER ================= */}
                         {screen === "loader" && (
@@ -709,10 +806,13 @@ export default function GirlfriendWishFinalPage() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                                         <div className="bg-white/70 rounded-2xl shadow-lg p-5 border border-pink-200">
-                                            <h3 className="text-lg md:text-xl font-bold text-pink-600 mb-2">Together Since 💞</h3>
+                                            <h3 className="text-lg md:text-xl font-bold text-pink-600 mb-2">
+                                                Together Since 💞
+                                            </h3>
                                             <p className="text-gray-700 font-medium">22 December 2025</p>
                                             <div className="mt-3 text-lg md:text-2xl font-bold text-rose-600">
-                                                {relationshipTime.days}d {relationshipTime.hours}h {relationshipTime.minutes}m {relationshipTime.seconds}s
+                                                {relationshipTime.days}d {relationshipTime.hours}h {relationshipTime.minutes}m{" "}
+                                                {relationshipTime.seconds}s
                                             </div>
                                         </div>
 
@@ -725,25 +825,28 @@ export default function GirlfriendWishFinalPage() {
                                             </p>
                                             <div className="mt-3 text-lg md:text-2xl font-bold text-rose-600">
                                                 {isBirthdayToday
-                                                    ? "Happy Birthday Khushi 💖"
+                                                    ? `Happy Birthday ${herName} 💖`
                                                     : `${birthdayCountdown.days}d ${birthdayCountdown.hours}h ${birthdayCountdown.minutes}m ${birthdayCountdown.seconds}s`}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={handleStart}
-                                        className="px-10 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg md:text-xl font-semibold rounded-full shadow-lg hover:scale-110 transition-all duration-300"
-                                    >
-                                        Start the Surprise 💌
-                                    </button>
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+                                        <button
+                                            onClick={handleStartSurprise}
+                                            className="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+                                        >
+                                            Start the Surprise 💖
+                                        </button>
+
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {/* ================= Q1 ================= */}
                         {screen === "q1" && (
-                            <div className="animate-fadeInUp">
+                            <div className="animate-fadeInUp min-h-[520px] flex flex-col items-center justify-center">
                                 <img
                                     src="/images/teddy.jpg"
                                     alt="Teddy Bear"
@@ -754,21 +857,22 @@ export default function GirlfriendWishFinalPage() {
                                     Hey {herName} 💕
                                 </h2>
                                 <p className="text-lg md:text-2xl text-rose-700 mb-8">
-                                    Are you ready for {yourName}'s little surprise? ✨
+                                    Are you ready for {yourName}&apos;s little surprise? ✨
                                 </p>
 
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <button
-                                        onClick={handleQ1}
-                                        className="px-8 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+                                        onClick={handleQ1Answer}
+                                        className="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
                                     >
-                                        Yes 💖
+                                        Yes I&apos;m Ready 💖
                                     </button>
+
                                     <button
-                                        onClick={handleQ1}
-                                        className="px-8 py-4 bg-white text-pink-600 border border-pink-300 text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+                                        onClick={handleQ1Answer}
+                                        className="px-8 py-3 bg-white text-pink-600 border border-pink-300 text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
                                     >
-                                        Of course 😘
+                                        Always Ready ✨
                                     </button>
                                 </div>
                             </div>
@@ -776,23 +880,26 @@ export default function GirlfriendWishFinalPage() {
 
                         {/* ================= Q2 ================= */}
                         {screen === "q2" && (
-                            <div className="animate-fadeInUp">
+                            <div className="animate-fadeInUp min-h-[520px] flex flex-col items-center justify-center">
                                 <div className="text-5xl md:text-7xl mb-4 animate-heartbeat">💖</div>
-                                <h2 className="text-3xl md:text-5xl font-bold text-pink-600 mb-4">One More Question 😍</h2>
+                                <h2 className="text-3xl md:text-5xl font-bold text-pink-600 mb-4">
+                                    One More Question 😍
+                                </h2>
                                 <p className="text-lg md:text-2xl text-rose-700 mb-8">
                                     {herName}, do you know how much {yourName} loves you? 🥹
                                 </p>
 
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <button
-                                        onClick={handleQ2}
-                                        className="px-8 py-4 bg-white text-pink-600 border border-pink-300 text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+                                        onClick={handleQ2Answer}
+                                        className="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
                                     >
-                                        A lot 💕
+                                        So Much 💕
                                     </button>
+
                                     <button
-                                        onClick={handleQ2}
-                                        className="px-8 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+                                        onClick={handleQ2Answer}
+                                        className="px-8 py-3 bg-white text-pink-600 border border-pink-300 text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
                                     >
                                         Infinite ❤️
                                     </button>
@@ -802,24 +909,28 @@ export default function GirlfriendWishFinalPage() {
 
                         {/* ================= ENVELOPE ================= */}
                         {screen === "envelope" && (
-                            <div className="animate-fadeInUp">
+                            <div className="animate-fadeInUp min-h-[580px] flex flex-col items-center justify-center">
                                 <h2 className="text-3xl md:text-5xl font-bold text-pink-600 mb-4">
                                     A Love Letter For {herName} 💌
                                 </h2>
                                 <p className="text-lg md:text-2xl text-rose-700 mb-8">
-                                    Opening {yourName}'s heart for you...
+                                    Opening {yourName}&apos;s heart for you...
                                 </p>
 
                                 <div className="flex justify-center">
                                     <div className="relative w-72 md:w-96 h-64 md:h-80 flex items-center justify-center">
                                         <div
                                             className={`absolute left-1/2 -translate-x-1/2 w-48 md:w-64 bg-white rounded-2xl shadow-2xl border-2 border-pink-200 p-4 md:p-6 transition-all duration-1000 ${envelopeOpen
-                                                ? "bottom-28 md:bottom-36 opacity-100 rotate-0 scale-100"
-                                                : "bottom-14 md:bottom-20 opacity-0 rotate-6 scale-90"
+                                                    ? "bottom-28 md:bottom-36 opacity-100 rotate-0 scale-100"
+                                                    : "bottom-14 md:bottom-20 opacity-0 rotate-6 scale-90"
                                                 }`}
                                         >
-                                            <p className="text-pink-600 font-bold text-sm md:text-lg">To: {herName} 💖</p>
-                                            <p className="mt-2 text-rose-600 text-xs md:text-sm">From: {yourName} ❤️</p>
+                                            <p className="text-pink-600 font-bold text-sm md:text-lg">
+                                                To: {herName} 💖
+                                            </p>
+                                            <p className="mt-2 text-rose-600 text-xs md:text-sm">
+                                                From: {yourName} ❤️
+                                            </p>
                                         </div>
 
                                         <div className="absolute bottom-0">
@@ -833,9 +944,15 @@ export default function GirlfriendWishFinalPage() {
 
                                         {envelopeOpen && (
                                             <>
-                                                <div className="absolute top-10 left-16 text-2xl md:text-3xl animate-floatMiniHeart">💖</div>
-                                                <div className="absolute top-6 right-16 text-2xl md:text-3xl animate-floatMiniHeart2">💕</div>
-                                                <div className="absolute top-0 left-1/2 -translate-x-1/2 text-3xl md:text-4xl animate-floatMiniHeart3">❤️</div>
+                                                <div className="absolute top-10 left-16 text-2xl md:text-3xl animate-floatMiniHeart">
+                                                    💖
+                                                </div>
+                                                <div className="absolute top-6 right-16 text-2xl md:text-3xl animate-floatMiniHeart2">
+                                                    💕
+                                                </div>
+                                                <div className="absolute top-0 left-1/2 -translate-x-1/2 text-3xl md:text-4xl animate-floatMiniHeart3">
+                                                    ❤️
+                                                </div>
                                             </>
                                         )}
                                     </div>
@@ -845,7 +962,7 @@ export default function GirlfriendWishFinalPage() {
 
                         {/* ================= MESSAGE ================= */}
                         {screen === "message" && (
-                            <div className="animate-fadeInUp">
+                            <div className="animate-fadeInUp min-h-[560px] flex flex-col items-center justify-center">
                                 <img
                                     src="/images/teddy.jpg"
                                     alt="Teddy Bear"
@@ -869,6 +986,7 @@ export default function GirlfriendWishFinalPage() {
                                 <h2 className="text-3xl md:text-5xl font-bold text-pink-600 mb-4">
                                     Our Beautiful Memories 📸
                                 </h2>
+
                                 <p className="text-lg md:text-xl text-rose-700 mb-8">
                                     Every photo, every moment, every smile... means everything to {yourName} 💖
                                 </p>
@@ -877,20 +995,24 @@ export default function GirlfriendWishFinalPage() {
                                     {galleryImages.map((img, idx) => (
                                         <div
                                             key={idx}
-                                            className={`bg-white/80 p-3 md:p-4 rounded-3xl shadow-2xl border border-pink-200 ${img.cls} ${img.rotate} hover:rotate-0 hover:scale-[1.02] transition-all duration-700`}
+                                            className={`bg-white/85 p-3 md:p-4 rounded-3xl shadow-2xl border border-pink-200 ${img.cls} ${img.rotate} hover:rotate-0 hover:scale-[1.02] transition-all duration-700`}
                                         >
-                                            <div className="relative w-full h-[280px] md:h-[360px] bg-pink-50 rounded-2xl overflow-hidden">
-                                                <img
-                                                    src={img.src}
-                                                    alt={img.title}
-                                                    className="w-full h-full object-cover rounded-2xl"
-                                                />
+                                            <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 shadow-inner p-3">
+                                                <div className="relative w-full h-[360px] md:h-[500px] lg:h-[560px] rounded-2xl overflow-hidden bg-white flex items-center justify-center">
+                                                    <img
+                                                        src={img.src}
+                                                        alt={img.title}
+                                                        className="w-full h-full object-contain rounded-2xl"
+                                                    />
 
-                                                <div className="absolute top-3 left-3 text-xl md:text-2xl animate-pulse">✨</div>
-                                                <div className="absolute bottom-3 right-3 text-xl md:text-2xl animate-pulse">💖</div>
+                                                    <div className="absolute top-3 left-3 text-xl md:text-2xl animate-pulse">✨</div>
+                                                    <div className="absolute bottom-3 right-3 text-xl md:text-2xl animate-pulse">💖</div>
+                                                </div>
                                             </div>
 
-                                            <p className="mt-3 text-base md:text-lg font-bold text-pink-600">{img.title}</p>
+                                            <p className="mt-4 text-base md:text-xl font-bold text-pink-600 leading-snug">
+                                                {img.title}
+                                            </p>
                                         </div>
                                     ))}
                                 </div>
@@ -899,14 +1021,97 @@ export default function GirlfriendWishFinalPage() {
 
                         {/* ================= FINAL ================= */}
                         {screen === "final" && (
-                            <div className="animate-fadeInUp relative z-30">
+                            <div className="animate-fadeInUp relative z-30 min-h-[980px] md:min-h-[1100px] flex flex-col items-center justify-center py-8">
+                                {/* DESKTOP SIDE 4 IMAGES */}
+                                <div className="hidden xl:block">
+                                    <div className="absolute left-4 top-6 w-52 2xl:w-60 z-40 animate-sidePhotoFloat1">
+                                        <div className="bg-white/90 p-3 rounded-3xl shadow-2xl border-2 border-pink-200 rotate-[-8deg]">
+                                            <div className="w-full h-64 2xl:h-72 rounded-2xl overflow-hidden bg-white flex items-center justify-center">
+                                                <img
+                                                    src="/images/her1.jpeg"
+                                                    alt="her1"
+                                                    className="w-full h-full object-contain bg-white rounded-2xl"
+                                                />
+                                            </div>
+                                            <p className="mt-2 text-pink-600 font-bold text-sm">My Beautiful Girl 💕</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute right-4 top-6 w-52 2xl:w-60 z-40 animate-sidePhotoFloat2">
+                                        <div className="bg-white/90 p-3 rounded-3xl shadow-2xl border-2 border-pink-200 rotate-[8deg]">
+                                            <div className="w-full h-64 2xl:h-72 rounded-2xl overflow-hidden bg-white flex items-center justify-center">
+                                                <img
+                                                    src="/images/her2.jpeg"
+                                                    alt="her2"
+                                                    className="w-full h-full object-contain bg-white rounded-2xl"
+                                                />
+                                            </div>
+                                            <p className="mt-2 text-pink-600 font-bold text-sm">The Smile I Love Most 😍</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute left-8 bottom-8 w-56 2xl:w-64 z-40 animate-sidePhotoFloat3">
+                                        <div className="bg-white/90 p-3 rounded-3xl shadow-2xl border-2 border-pink-200 rotate-[6deg]">
+                                            <div className="w-full h-64 2xl:h-72 rounded-2xl overflow-hidden bg-white flex items-center justify-center">
+                                                <img
+                                                    src="/images/us1.jpeg"
+                                                    alt="us1"
+                                                    className="w-full h-full object-contain bg-white rounded-2xl"
+                                                />
+                                            </div>
+                                            <p className="mt-2 text-pink-600 font-bold text-sm">
+                                                {yourName} & {herName} 💞
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute right-8 bottom-8 w-56 2xl:w-64 z-40 animate-sidePhotoFloat4">
+                                        <div className="bg-white/90 p-3 rounded-3xl shadow-2xl border-2 border-pink-200 rotate-[-6deg]">
+                                            <div className="w-full h-64 2xl:h-72 rounded-2xl overflow-hidden bg-white flex items-center justify-center">
+                                                <img
+                                                    src="/images/us2.jpeg"
+                                                    alt="us2"
+                                                    className="w-full h-full object-contain bg-white rounded-2xl"
+                                                />
+                                            </div>
+                                            <p className="mt-2 text-pink-600 font-bold text-sm">
+                                                Forever {yourName} + {herName} ❤️
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* MOBILE TOP 2 IMAGES */}
+                                <div className="xl:hidden w-full max-w-3xl mb-6 px-2 md:px-6 z-30">
+                                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                        <div className="bg-white/85 p-2 md:p-3 rounded-2xl shadow-lg border border-pink-200 animate-photoTopLeft">
+                                            <div className="h-36 md:h-44 rounded-xl overflow-hidden bg-white flex items-center justify-center">
+                                                <img
+                                                    src="/images/her1.jpeg"
+                                                    alt="her1"
+                                                    className="w-full h-full object-contain bg-white rounded-xl"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="bg-white/85 p-2 md:p-3 rounded-2xl shadow-lg border border-pink-200 animate-photoTopRight">
+                                            <div className="h-36 md:h-44 rounded-xl overflow-hidden bg-white flex items-center justify-center">
+                                                <img
+                                                    src="/images/her2.jpeg"
+                                                    alt="her2"
+                                                    className="w-full h-full object-contain bg-white rounded-xl"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <img
                                     src="/images/teddy.jpg"
                                     alt="Teddy Bear"
-                                    className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-full mx-auto mb-4 shadow-lg border-4 border-pink-200 animate-float"
+                                    className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-full mx-auto mb-4 shadow-lg border-4 border-pink-200 animate-float z-30"
                                 />
 
-                                <div className="bg-white/80 border border-pink-200 rounded-3xl p-6 md:p-10 shadow-xl max-w-3xl mx-auto relative overflow-hidden">
+                                <div className="bg-white/80 border border-pink-200 rounded-3xl p-6 md:p-10 shadow-xl max-w-3xl mx-auto relative overflow-hidden xl:mx-[260px] 2xl:mx-[300px] z-30">
                                     <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold shadow-lg mb-6 animate-badgePulse">
                                         💯 100 Days of Love
                                     </div>
@@ -914,7 +1119,7 @@ export default function GirlfriendWishFinalPage() {
                                     {isBirthdayToday && (
                                         <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-pink-100 to-rose-100 border border-pink-300 animate-birthdayPopupStrong">
                                             <p className="text-xl md:text-3xl font-extrabold text-pink-600">
-                                                🎂 Happy Birthday Khushi 💖
+                                                🎂 Happy Birthday {herName} 💖
                                             </p>
                                         </div>
                                     )}
@@ -927,7 +1132,10 @@ export default function GirlfriendWishFinalPage() {
 
                                     <div className="space-y-4 min-h-[260px]">
                                         {displayedFinalLines.map((line, idx) => (
-                                            <p key={idx} className="text-base md:text-xl text-gray-700 leading-8 animate-finalLineIn">
+                                            <p
+                                                key={idx}
+                                                className="text-base md:text-xl text-gray-700 leading-8 animate-finalLineIn"
+                                            >
                                                 {line}
                                             </p>
                                         ))}
@@ -943,7 +1151,8 @@ export default function GirlfriendWishFinalPage() {
                                         <div className="bg-pink-50 rounded-2xl p-4 border border-pink-200">
                                             <h3 className="text-lg font-bold text-pink-600">Together Since 💞</h3>
                                             <p className="mt-2 text-rose-600 font-semibold text-lg">
-                                                {relationshipTime.days}d {relationshipTime.hours}h {relationshipTime.minutes}m {relationshipTime.seconds}s
+                                                {relationshipTime.days}d {relationshipTime.hours}h {relationshipTime.minutes}m{" "}
+                                                {relationshipTime.seconds}s
                                             </p>
                                         </div>
 
@@ -953,7 +1162,7 @@ export default function GirlfriendWishFinalPage() {
                                             </h3>
                                             <p className="mt-2 text-rose-600 font-semibold text-lg">
                                                 {isBirthdayToday
-                                                    ? "Happy Birthday Khushi 💖"
+                                                    ? `Happy Birthday ${herName} 💖`
                                                     : `${birthdayCountdown.days}d ${birthdayCountdown.hours}h ${birthdayCountdown.minutes}m ${birthdayCountdown.seconds}s`}
                                             </p>
                                         </div>
@@ -988,13 +1197,37 @@ export default function GirlfriendWishFinalPage() {
                                         )}
                                     </div>
 
-                                    <div className="mt-8">
+                                    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                                         <button
                                             onClick={handleReadAgain}
                                             className="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg font-semibold rounded-full shadow-lg hover:scale-105 transition-all duration-300"
                                         >
                                             Read Again 💗
                                         </button>
+
+                                    </div>
+                                </div>
+
+                                {/* MOBILE BOTTOM 2 IMAGES */}
+                                <div className="xl:hidden w-full max-w-3xl mt-6 grid grid-cols-2 gap-3 md:gap-4 z-30 px-2 md:px-6">
+                                    <div className="bg-white/85 p-2 md:p-3 rounded-2xl shadow-lg border border-pink-200 animate-photoBottomLeft">
+                                        <div className="h-36 md:h-44 rounded-xl overflow-hidden bg-white flex items-center justify-center">
+                                            <img
+                                                src="/images/us1.jpeg"
+                                                alt="us1"
+                                                className="w-full h-full object-contain bg-white rounded-xl"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white/85 p-2 md:p-3 rounded-2xl shadow-lg border border-pink-200 animate-photoBottomRight">
+                                        <div className="h-36 md:h-44 rounded-xl overflow-hidden bg-white flex items-center justify-center">
+                                            <img
+                                                src="/images/us2.jpeg"
+                                                alt="us2"
+                                                className="w-full h-full object-contain bg-white rounded-xl"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1100,7 +1333,8 @@ export default function GirlfriendWishFinalPage() {
         }
 
         @keyframes timerPulse {
-          0%, 100% {
+          0%,
+          100% {
             transform: scale(1);
             box-shadow: 0 0 0 rgba(255, 105, 180, 0);
           }
@@ -1122,7 +1356,8 @@ export default function GirlfriendWishFinalPage() {
         }
 
         @keyframes float {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateY(0px);
           }
           50% {
@@ -1258,7 +1493,8 @@ export default function GirlfriendWishFinalPage() {
         }
 
         @keyframes badgePulse {
-          0%, 100% {
+          0%,
+          100% {
             transform: scale(1);
           }
           50% {
@@ -1307,6 +1543,46 @@ export default function GirlfriendWishFinalPage() {
           100% {
             opacity: 1;
             transform: translate(0, 0) scale(1) rotate(-1deg);
+          }
+        }
+
+        @keyframes sidePhotoFloat1 {
+          0%,
+          100% {
+            transform: translateY(0px) rotate(-8deg);
+          }
+          50% {
+            transform: translateY(-10px) rotate(-6deg);
+          }
+        }
+
+        @keyframes sidePhotoFloat2 {
+          0%,
+          100% {
+            transform: translateY(0px) rotate(8deg);
+          }
+          50% {
+            transform: translateY(-12px) rotate(6deg);
+          }
+        }
+
+        @keyframes sidePhotoFloat3 {
+          0%,
+          100% {
+            transform: translateY(0px) rotate(6deg);
+          }
+          50% {
+            transform: translateY(-9px) rotate(4deg);
+          }
+        }
+
+        @keyframes sidePhotoFloat4 {
+          0%,
+          100% {
+            transform: translateY(0px) rotate(-6deg);
+          }
+          50% {
+            transform: translateY(-11px) rotate(-4deg);
           }
         }
 
@@ -1410,6 +1686,22 @@ export default function GirlfriendWishFinalPage() {
 
         .animate-photoBottomRight {
           animation: photoBottomRight 1.1s ease forwards;
+        }
+
+        .animate-sidePhotoFloat1 {
+          animation: sidePhotoFloat1 4s ease-in-out infinite;
+        }
+
+        .animate-sidePhotoFloat2 {
+          animation: sidePhotoFloat2 4.4s ease-in-out infinite;
+        }
+
+        .animate-sidePhotoFloat3 {
+          animation: sidePhotoFloat3 4.2s ease-in-out infinite;
+        }
+
+        .animate-sidePhotoFloat4 {
+          animation: sidePhotoFloat4 4.6s ease-in-out infinite;
         }
       `}</style>
         </div>
