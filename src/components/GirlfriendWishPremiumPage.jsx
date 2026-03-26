@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function GirlfriendWishFinalPage() {
-    const herName = "Boke";
+    const herName = "Bhoke";
     const yourName = "Boka";
 
     // ================= STABLE DATA =================
